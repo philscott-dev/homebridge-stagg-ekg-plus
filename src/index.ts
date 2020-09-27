@@ -10,13 +10,11 @@ import {
   Logging,
   Service,
   StaticPlatformPlugin,
+  PlatformConfig,
 } from 'homebridge'
 
 let hap: HAP
-
-const BASE_URL = 'http://192.168.1.18:8080/api'
 const PLATFORM_NAME = 'Stagg EKG+'
-const ACCESSORY_NAME = 'EKG+'
 
 export = (api: API) => {
   hap = api.hap
@@ -25,31 +23,53 @@ export = (api: API) => {
 
 class StaggEkgPlusPlatform implements StaticPlatformPlugin {
   private readonly log: Logging
+  private config: PlatformConfig
+  private api: API
 
-  constructor(log: Logging) {
+  constructor(log: Logging, config: PlatformConfig, api: API) {
     this.log = log
-
-    // probably parse config or something here
+    this.config = config
+    this.api = api
 
     log.info(`${PLATFORM_NAME} Platform Initialized`)
   }
 
   accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): void {
-    callback([new ExampleSwitch(hap, this.log, ACCESSORY_NAME)])
+    callback([new KettleSwitch(hap, this.log, this.config, PLATFORM_NAME)])
   }
 }
 
-class ExampleSwitch implements AccessoryPlugin {
+class KettleSwitch implements AccessoryPlugin {
   private readonly log: Logging
   private readonly name: string
   private switchOn = false
 
   private readonly switchService: Service
   private readonly informationService: Service
+  // private readonly temperatureService: Service
 
-  constructor(hap: HAP, log: Logging, name: string) {
+  constructor(hap: HAP, log: Logging, config: PlatformConfig, name: string) {
     this.log = log
     this.name = name
+    const host = config.host || 'localhost'
+    const port = config.port || '80'
+    const BASE_URL = `${host}:${port}/api`
+
+    /**
+     * Information Service
+     */
+    const { Manufacturer, Model, SerialNumber } = hap.Characteristic
+    this.informationService = new hap.Service.AccessoryInformation()
+      .setCharacteristic(Manufacturer, 'Fellow')
+      .setCharacteristic(Model, 'Stagg EKG+')
+      .setCharacteristic(
+        SerialNumber,
+        (config.serialNumber as string) || '000000000000000',
+      )
+
+    /**
+     * Switch Service
+     */
 
     this.switchService = new hap.Service.Switch(this.name)
     this.switchService
@@ -72,9 +92,9 @@ class ExampleSwitch implements AccessoryPlugin {
         ) => {
           try {
             if (on) {
-              await axios.get(`${BASE_URL}/power/on`)
+              await axios.get(`${BASE_URL}/api/power/on`)
             } else {
-              await axios.get(`${BASE_URL}/power/off`)
+              await axios.get(`${BASE_URL}/api/power/off`)
             }
 
             this.switchOn = on as boolean
@@ -84,30 +104,39 @@ class ExampleSwitch implements AccessoryPlugin {
             callback()
           } catch (err) {
             log.error(err)
+            callback(err)
           }
         },
       )
 
-    this.informationService = new hap.Service.AccessoryInformation()
-      .setCharacteristic(hap.Characteristic.Manufacturer, 'Fellow')
-      .setCharacteristic(hap.Characteristic.Model, 'Stagg EKG+')
+    /**
+     * Temperature Service
+     * F Range: 104 - 212
+     * C Range: 40 - 100
+     */
+
+    // const minValue = 104
+    // const maxValue = 212
+
+    // this.temperatureService = new hap.Service.Thermostat(this.name)
+    // this.temperatureService.getCharacteristic(
+    //   hap.Characteristic.CurrentTemperature,
+    // )
+    // this.temperatureService.getCharacteristic(
+    //   hap.Characteristic.TargetTemperature,
+    // )
+    // this.temperatureService
+    //   .getCharacteristic(hap.Characteristic.HeatingThresholdTemperature)
+    //   .setProps({ minValue, maxValue })
 
     log.info('Switch finished initializing!')
   }
 
-  /*
-   * This method is optional to implement. It is called when HomeKit ask to identify the accessory.
-   * Typical this only ever happens at the pairing process.
-   */
-  identify(): void {
-    this.log('Identify!')
-  }
-
-  /*
-   * This method is called directly after creation of this instance.
-   * It should return all services which should be added to the accessory.
-   */
   getServices(): Service[] {
-    return [this.informationService, this.switchService]
+    return [
+      this.informationService,
+      this.switchService,
+      //this.temperatureService,
+    ]
   }
 }

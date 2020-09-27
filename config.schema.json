@@ -1,0 +1,28 @@
+{
+  "pluginAlias": "Stagg EKG+",
+  "pluginType": "platform",
+  "headerDisplay": "Stagg EKG+",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "required": true
+      },
+     "host": {
+        "title": "IP Address / Host",
+        "type": "string",
+        "required": true,
+        "format": "hostname"
+      },
+      "port": {
+        "title": "Port",
+        "type": "number",
+        "required": true
+      }
+    }
+  },
+  "form": null,
+  "display": null
+}
