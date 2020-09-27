@@ -1,3 +1,4 @@
+import axios from 'axios'
 import {
   AccessoryPlugin,
   API,
@@ -13,9 +14,13 @@ import {
 
 let hap: HAP
 
+const BASE_URL = 'http://192.168.1.18:8080/api'
+const PLATFORM_NAME = 'Stagg EKG+'
+const ACCESSORY_NAME = 'EKG+'
+
 export = (api: API) => {
   hap = api.hap
-  api.registerPlatform('Stagg EKG+', StaggEkgPlusPlatform)
+  api.registerPlatform(PLATFORM_NAME, StaggEkgPlusPlatform)
 }
 
 class StaggEkgPlusPlatform implements StaticPlatformPlugin {
@@ -26,11 +31,11 @@ class StaggEkgPlusPlatform implements StaticPlatformPlugin {
 
     // probably parse config or something here
 
-    log.info('Stagg EKG+ Platform Initialized')
+    log.info(`${PLATFORM_NAME} Platform Initialized`)
   }
 
   accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): void {
-    callback([new ExampleSwitch(hap, this.log, 'EKG+')])
+    callback([new ExampleSwitch(hap, this.log, ACCESSORY_NAME)])
   }
 }
 
@@ -61,10 +66,25 @@ class ExampleSwitch implements AccessoryPlugin {
       )
       .on(
         CharacteristicEventTypes.SET,
-        (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-          this.switchOn = value as boolean
-          log.info('Switch state was set to: ' + (this.switchOn ? 'ON' : 'OFF'))
-          callback()
+        async (
+          on: CharacteristicValue,
+          callback: CharacteristicSetCallback,
+        ) => {
+          try {
+            if (on) {
+              await axios.get(`${BASE_URL}/power/on`)
+            } else {
+              await axios.get(`${BASE_URL}/power/off`)
+            }
+
+            this.switchOn = on as boolean
+            log.info(
+              'Switch state was set to: ' + (this.switchOn ? 'ON' : 'OFF'),
+            )
+            callback()
+          } catch (err) {
+            log.error(err)
+          }
         },
       )
 
