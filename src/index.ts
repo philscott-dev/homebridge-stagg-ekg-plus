@@ -90,9 +90,9 @@ class KettleSwitch implements AccessoryPlugin {
         ) => {
           try {
             if (on) {
-              await axios.get(`${BASE_URL}/api/power/on`)
+              await axios.get(`${BASE_URL}/power/on`)
             } else {
-              await axios.get(`${BASE_URL}/api/power/off`)
+              await axios.get(`${BASE_URL}/power/off`)
             }
 
             this.switchOn = on as boolean
