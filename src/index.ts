@@ -30,8 +30,6 @@ class StaggEkgPlusPlatform implements StaticPlatformPlugin {
     this.log = log
     this.config = config
     this.api = api
-
-    log.info(`${PLATFORM_NAME} Platform Initialized`)
   }
 
   accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): void {
@@ -53,7 +51,7 @@ class KettleSwitch implements AccessoryPlugin {
     this.name = name
     const host = config.host || 'localhost'
     const port = config.port || '80'
-    const BASE_URL = `${host}:${port}/api`
+    const BASE_URL = `http://${host}:${port}/api`
 
     /**
      * Information Service
