@@ -41,10 +41,11 @@ class KettleSwitch implements AccessoryPlugin {
   private readonly log: Logging
   private readonly name: string
   private switchOn = false
+  private targetTemp = 205
 
   private readonly switchService: Service
   private readonly informationService: Service
-  // private readonly temperatureService: Service
+  private readonly temperatureService: Service
 
   constructor(hap: HAP, log: Logging, config: PlatformConfig, name: string) {
     this.log = log
@@ -56,10 +57,11 @@ class KettleSwitch implements AccessoryPlugin {
     /**
      * Information Service
      */
-    const { Manufacturer, Model, SerialNumber } = hap.Characteristic
+    const { Manufacturer, Model, SerialNumber, Name } = hap.Characteristic
     this.informationService = new hap.Service.AccessoryInformation()
       .setCharacteristic(Manufacturer, 'Fellow')
       .setCharacteristic(Model, 'Stagg EKG+')
+      .setCharacteristic(Name, config.name as string)
       .setCharacteristic(
         SerialNumber,
         (config.serialNumber as string) || '000000000000000',
@@ -69,7 +71,7 @@ class KettleSwitch implements AccessoryPlugin {
      * Switch Service
      */
 
-    this.switchService = new hap.Service.Switch(this.name)
+    this.switchService = new hap.Service.Switch(config.name)
     this.switchService
       .getCharacteristic(hap.Characteristic.On)
       .on(
@@ -113,19 +115,40 @@ class KettleSwitch implements AccessoryPlugin {
      * C Range: 40 - 100
      */
 
-    // const minValue = 104
-    // const maxValue = 212
+    const minValue = 104
+    const maxValue = 212
 
-    // this.temperatureService = new hap.Service.Thermostat(this.name)
-    // this.temperatureService.getCharacteristic(
-    //   hap.Characteristic.CurrentTemperature,
-    // )
-    // this.temperatureService.getCharacteristic(
-    //   hap.Characteristic.TargetTemperature,
-    // )
-    // this.temperatureService
-    //   .getCharacteristic(hap.Characteristic.HeatingThresholdTemperature)
-    //   .setProps({ minValue, maxValue })
+    this.temperatureService = new hap.Service.Thermostat(this.name)
+    this.temperatureService.getCharacteristic(
+      hap.Characteristic.CurrentTemperature,
+    )
+    this.temperatureService.getCharacteristic(
+      hap.Characteristic.TargetTemperature,
+    )
+    this.temperatureService
+      .getCharacteristic(hap.Characteristic.HeatingThresholdTemperature)
+      .setProps({ minValue, maxValue })
+
+    this.temperatureService
+      .getCharacteristic(hap.Characteristic.On)
+      .on(
+        CharacteristicEventTypes.GET,
+        (callback: CharacteristicGetCallback) => {
+          log.info('Target Temp: ' + this.targetTemp)
+          callback(undefined, this.targetTemp)
+        },
+      )
+      .on(
+        CharacteristicEventTypes.SET,
+        async (
+          value: CharacteristicValue,
+          callback: CharacteristicSetCallback,
+        ) => {
+          this.targetTemp = value as number
+          log.info(`Kettle target temperature was set to: ${this.targetTemp}`)
+          callback()
+        },
+      )
 
     log.info('Switch finished initializing!')
   }
@@ -133,8 +156,8 @@ class KettleSwitch implements AccessoryPlugin {
   getServices(): Service[] {
     return [
       this.informationService,
+      this.temperatureService,
       this.switchService,
-      //this.temperatureService,
     ]
   }
 }
