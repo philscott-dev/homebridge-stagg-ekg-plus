@@ -1,5 +1,5 @@
 # homebridge-stagg-ekg-plus
-To be used in conjunction with [homebridge-stagg-ekg-plus-server](https://github.com/philscott-dev/homebridge-stagg-ekg-plus-server)
+Homebridge plugin to be used in conjunction with [homebridge-stagg-ekg-plus-server](https://github.com/philscott-dev/homebridge-stagg-ekg-plus-server)
 
 ## Installation
 ```
