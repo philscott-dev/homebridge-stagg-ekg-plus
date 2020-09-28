@@ -13,6 +13,11 @@ import {
   PlatformConfig,
 } from 'homebridge'
 
+enum PowerState {
+  Off,
+  On,
+}
+
 let hap: HAP
 const PLATFORM_NAME = 'Stagg EKG+'
 
@@ -76,12 +81,17 @@ class KettleSwitch implements AccessoryPlugin {
       .getCharacteristic(hap.Characteristic.On)
       .on(
         CharacteristicEventTypes.GET,
-        (callback: CharacteristicGetCallback) => {
-          log.info(
-            'Current state of the switch was returned: ' +
-              (this.switchOn ? 'ON' : 'OFF'),
-          )
-          callback(undefined, this.switchOn)
+        async (callback: CharacteristicGetCallback) => {
+          try {
+            const { data } = await axios.get(`${BASE_URL}/status`)
+            log.info(
+              `${this.name} is powered: ${data.powerState} ? 'ON' : 'OFF'}`,
+            )
+            callback(undefined, data.powerState)
+          } catch (err) {
+            log.error(err)
+            callback(err)
+          }
         },
       )
       .on(
@@ -91,16 +101,9 @@ class KettleSwitch implements AccessoryPlugin {
           callback: CharacteristicSetCallback,
         ) => {
           try {
-            if (on) {
-              await axios.get(`${BASE_URL}/power/on`)
-            } else {
-              await axios.get(`${BASE_URL}/power/off`)
-            }
-
-            this.switchOn = on as boolean
-            log.info(
-              'Switch state was set to: ' + (this.switchOn ? 'ON' : 'OFF'),
-            )
+            const powerState = on ? PowerState.On : PowerState.Off
+            await axios.post(`${BASE_URL}/power`, { targetState: powerState })
+            log.info(`${this.name} is powered: ${powerState ? 'ON' : 'OFF'}`)
             callback()
           } catch (err) {
             log.error(err)
