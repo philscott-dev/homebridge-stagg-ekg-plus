@@ -45,7 +45,6 @@ class StaggEkgPlusPlatform implements StaticPlatformPlugin {
 class KettleSwitch implements AccessoryPlugin {
   private readonly log: Logging
   private readonly name: string
-  private switchOn = false
   private targetTemp = 205
 
   private readonly switchService: Service
@@ -85,7 +84,7 @@ class KettleSwitch implements AccessoryPlugin {
           try {
             const { data } = await axios.get(`${BASE_URL}/status`)
             log.info(
-              `${this.name} is powered: ${data.powerState} ? 'ON' : 'OFF'}`,
+              `${this.name} is powered: ${data.powerState ? 'ON' : 'OFF'}`,
             )
             callback(undefined, data.powerState)
           } catch (err) {
