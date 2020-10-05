@@ -117,6 +117,10 @@ class KettleSwitch implements AccessoryPlugin {
 
     this.temperatureService = new hap.Service.Thermostat(this.name)
 
+    this.temperatureService
+      .getCharacteristic(hap.Characteristic.TemperatureDisplayUnits)
+      .updateValue(hap.Characteristic.TemperatureDisplayUnits.FAHRENHEIT)
+
     /**
      * Threshold
      * F Range: 104 - 212
@@ -130,16 +134,15 @@ class KettleSwitch implements AccessoryPlugin {
     //   .setProps({ minValue, maxValue })
 
     /**
-     * Power State
+     * (Power) Target Heating Cooling State
      */
 
     this.temperatureService
       .getCharacteristic(hap.Characteristic.TargetHeatingCoolingState)
       .setProps({
-        validValues: [
-          hap.Characteristic.TargetHeatingCoolingState.OFF,
-          hap.Characteristic.TargetHeatingCoolingState.HEAT,
-        ],
+        minValue: 0,
+        maxValue: 1,
+        validValues: [0, 1],
       })
       .on(
         CharacteristicEventTypes.GET,
@@ -174,7 +177,7 @@ class KettleSwitch implements AccessoryPlugin {
       )
 
     /**
-     * Current Temp
+     * Current Temperature
      */
 
     this.temperatureService
@@ -196,7 +199,7 @@ class KettleSwitch implements AccessoryPlugin {
       )
 
     /**
-     * Target Temp
+     * Target Temperature
      */
 
     this.temperatureService
