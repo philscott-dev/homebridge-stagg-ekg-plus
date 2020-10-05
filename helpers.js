@@ -2,11 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fahrenheitToCelsius = exports.celsiusToFahrenheit = void 0;
 function celsiusToFahrenheit(celsius) {
-    return celsius * (9 / 5) + 32;
+    return Math.round(celsius * (9 / 5) + 32);
 }
 exports.celsiusToFahrenheit = celsiusToFahrenheit;
 function fahrenheitToCelsius(fahrenheit) {
-    return (fahrenheit - 32) * (5 / 9);
+    return Math.round((fahrenheit - 32) * (5 / 9));
 }
 exports.fahrenheitToCelsius = fahrenheitToCelsius;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaGVscGVycy5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbInNyYy9oZWxwZXJzLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7OztBQUFBLFNBQWdCLG1CQUFtQixDQUFDLE9BQWU7SUFDakQsT0FBTyxPQUFPLEdBQUcsQ0FBQyxDQUFDLEdBQUcsQ0FBQyxDQUFDLEdBQUcsRUFBRSxDQUFBO0FBQy9CLENBQUM7QUFGRCxrREFFQztBQUVELFNBQWdCLG1CQUFtQixDQUFDLFVBQWtCO0lBQ3BELE9BQU8sQ0FBQyxVQUFVLEdBQUcsRUFBRSxDQUFDLEdBQUcsQ0FBQyxDQUFDLEdBQUcsQ0FBQyxDQUFDLENBQUE7QUFDcEMsQ0FBQztBQUZELGtEQUVDIn0=
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaGVscGVycy5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbInNyYy9oZWxwZXJzLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7OztBQUFBLFNBQWdCLG1CQUFtQixDQUFDLE9BQWU7SUFDakQsT0FBTyxJQUFJLENBQUMsS0FBSyxDQUFDLE9BQU8sR0FBRyxDQUFDLENBQUMsR0FBRyxDQUFDLENBQUMsR0FBRyxFQUFFLENBQUMsQ0FBQTtBQUMzQyxDQUFDO0FBRkQsa0RBRUM7QUFFRCxTQUFnQixtQkFBbUIsQ0FBQyxVQUFrQjtJQUNwRCxPQUFPLElBQUksQ0FBQyxLQUFLLENBQUMsQ0FBQyxVQUFVLEdBQUcsRUFBRSxDQUFDLEdBQUcsQ0FBQyxDQUFDLEdBQUcsQ0FBQyxDQUFDLENBQUMsQ0FBQTtBQUNoRCxDQUFDO0FBRkQsa0RBRUMifQ==
