@@ -125,9 +125,9 @@ class KettleSwitch implements AccessoryPlugin {
 
     const minValue = 104
     const maxValue = 212
-    this.temperatureService
-      .getCharacteristic(hap.Characteristic.HeatingThresholdTemperature)
-      .setProps({ minValue, maxValue })
+    // this.temperatureService
+    //   .getCharacteristic(hap.Characteristic.HeatingThresholdTemperature)
+    //   .setProps({ minValue, maxValue })
 
     /**
      * Power State
@@ -135,7 +135,10 @@ class KettleSwitch implements AccessoryPlugin {
 
     this.temperatureService
       .getCharacteristic(hap.Characteristic.TargetHeaterCoolerState)
-      .setProps({ maxValue: hap.Characteristic.TargetHeaterCoolerState.HEAT })
+      .setProps({
+        maxValue: hap.Characteristic.TargetHeaterCoolerState.HEAT,
+        validValues: [0, 1],
+      })
       .on(
         CharacteristicEventTypes.GET,
         async (callback: CharacteristicGetCallback) => {
@@ -179,8 +182,9 @@ class KettleSwitch implements AccessoryPlugin {
         async (callback: CharacteristicGetCallback) => {
           try {
             const { data } = await axios.get(`${BASE_URL}/status`)
-            log.info('Current Temp: ' + data.currentTemp)
-            callback(undefined, data.currentTemp)
+            const isOff = data.currentTemp === '32' || data.currentTemp === 32
+            log.info('Current Temp: ' + isOff ? 'Off' : data.currentTemp)
+            callback(undefined, isOff ? 0 : (data.currentTemp as number))
           } catch (err) {
             log.error(err)
             callback(err)
@@ -194,13 +198,14 @@ class KettleSwitch implements AccessoryPlugin {
 
     this.temperatureService
       .getCharacteristic(hap.Characteristic.TargetTemperature)
+      .setProps({ minValue, maxValue })
       .on(
         CharacteristicEventTypes.GET,
         async (callback: CharacteristicGetCallback) => {
           try {
             const { data } = await axios.get(`${BASE_URL}/status`)
             log.info('Target Temp: ' + data.targetTemp)
-            callback(undefined, data.targetTemp)
+            callback(undefined, data.targetTemp as number)
           } catch (err) {
             log.error(err)
             callback(err)
