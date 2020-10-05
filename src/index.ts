@@ -12,11 +12,7 @@ import {
   StaticPlatformPlugin,
   PlatformConfig,
 } from 'homebridge'
-
-// enum PowerState {
-//   Off,
-//   On,
-// }
+import { fahrenheitToCelsius } from './helpers'
 
 let hap: HAP
 const PLATFORM_NAME = 'Stagg EKG+'
@@ -45,9 +41,7 @@ class StaggEkgPlusPlatform implements StaticPlatformPlugin {
 class KettleSwitch implements AccessoryPlugin {
   private readonly log: Logging
   private readonly name: string
-  //private targetTemp = 205
 
-  // private readonly switchService: Service
   private readonly informationService: Service
   private readonly temperatureService: Service
 
@@ -72,46 +66,6 @@ class KettleSwitch implements AccessoryPlugin {
       )
 
     /**
-     * Switch Service
-     */
-
-    // this.switchService = new hap.Service.Switch(config.name)
-    // this.switchService
-    //   .getCharacteristic(hap.Characteristic.On)
-    //   .on(
-    //     CharacteristicEventTypes.GET,
-    //     async (callback: CharacteristicGetCallback) => {
-    //       try {
-    //         const { data } = await axios.get(`${BASE_URL}/status`)
-    //         log.info(
-    //           `${this.name} is powered: ${data.powerState ? 'ON' : 'OFF'}`,
-    //         )
-    //         callback(undefined, data.powerState)
-    //       } catch (err) {
-    //         log.error(err)
-    //         callback(err)
-    //       }
-    //     },
-    //   )
-    //   .on(
-    //     CharacteristicEventTypes.SET,
-    //     async (
-    //       on: CharacteristicValue,
-    //       callback: CharacteristicSetCallback,
-    //     ) => {
-    //       try {
-    //         const powerState = on ? PowerState.On : PowerState.Off
-    //         await axios.post(`${BASE_URL}/power`, { targetState: powerState })
-    //         log.info(`${this.name} is powered: ${powerState ? 'ON' : 'OFF'}`)
-    //         callback()
-    //       } catch (err) {
-    //         log.error(err)
-    //         callback(err)
-    //       }
-    //     },
-    //   )
-
-    /**
      * Temperature Service
      */
 
@@ -120,18 +74,6 @@ class KettleSwitch implements AccessoryPlugin {
     this.temperatureService
       .getCharacteristic(hap.Characteristic.TemperatureDisplayUnits)
       .updateValue(hap.Characteristic.TemperatureDisplayUnits.FAHRENHEIT)
-
-    /**
-     * Threshold
-     * F Range: 104 - 212
-     * C Range: 40 - 100
-     */
-
-    const minValue = 104
-    const maxValue = 212
-    // this.temperatureService
-    //   .getCharacteristic(hap.Characteristic.HeatingThresholdTemperature)
-    //   .setProps({ minValue, maxValue })
 
     /**
      * (Power) Target Heating Cooling State
@@ -187,10 +129,9 @@ class KettleSwitch implements AccessoryPlugin {
         async (callback: CharacteristicGetCallback) => {
           try {
             const { data } = await axios.get(`${BASE_URL}/status`)
-            const isOff = data.currentTemp === '32' || data.currentTemp === 32
-            const temperature = isOff ? '0' : data.currentTemp
-            log.info('Current Temp: ' + temperature)
-            callback(undefined, temperature)
+            const currentTemp = fahrenheitToCelsius(data.currentTemp)
+            log.info('Current Temp: ' + currentTemp)
+            callback(undefined, currentTemp)
           } catch (err) {
             log.error(err)
             callback(err)
@@ -200,7 +141,12 @@ class KettleSwitch implements AccessoryPlugin {
 
     /**
      * Target Temperature
+     * F Range: 104 - 212
+     * C Range: 40 - 100
      */
+
+    const minValue = 40
+    const maxValue = 100
 
     this.temperatureService
       .getCharacteristic(hap.Characteristic.TargetTemperature)
@@ -216,8 +162,9 @@ class KettleSwitch implements AccessoryPlugin {
         async (callback: CharacteristicGetCallback) => {
           try {
             const { data } = await axios.get(`${BASE_URL}/status`)
-            log.info('Target Temp: ' + data.targetTemp)
-            callback(undefined, data.targetTemp)
+            const targetTemp = fahrenheitToCelsius(data.targetTemp)
+            log.info('Target Temp: ' + targetTemp)
+            callback(undefined, targetTemp)
           } catch (err) {
             log.error(err)
             callback(err)
@@ -247,10 +194,6 @@ class KettleSwitch implements AccessoryPlugin {
   }
 
   getServices(): Service[] {
-    return [
-      this.informationService,
-      //this.switchService,
-      this.temperatureService,
-    ]
+    return [this.informationService, this.temperatureService]
   }
 }
