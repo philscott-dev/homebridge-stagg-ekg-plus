@@ -136,7 +136,6 @@ class KettleSwitch implements AccessoryPlugin {
     this.temperatureService
       .getCharacteristic(hap.Characteristic.TargetHeatingCoolingState)
       .setProps({
-        maxValue: hap.Characteristic.TargetHeatingCoolingState.HEAT,
         validValues: [
           hap.Characteristic.TargetHeatingCoolingState.OFF,
           hap.Characteristic.TargetHeatingCoolingState.HEAT,
@@ -202,7 +201,13 @@ class KettleSwitch implements AccessoryPlugin {
 
     this.temperatureService
       .getCharacteristic(hap.Characteristic.TargetTemperature)
-      .setProps({ minValue, maxValue, minStep: 1 })
+      .setProps({
+        minValue,
+        maxValue,
+        minStep: 1,
+        format: hap.Formats.INT,
+        validValueRanges: [minValue, maxValue],
+      })
       .on(
         CharacteristicEventTypes.GET,
         async (callback: CharacteristicGetCallback) => {
