@@ -13,10 +13,10 @@ import {
   PlatformConfig,
 } from 'homebridge'
 
-enum PowerState {
-  Off,
-  On,
-}
+// enum PowerState {
+//   Off,
+//   On,
+// }
 
 let hap: HAP
 const PLATFORM_NAME = 'Stagg EKG+'
@@ -45,11 +45,11 @@ class StaggEkgPlusPlatform implements StaticPlatformPlugin {
 class KettleSwitch implements AccessoryPlugin {
   private readonly log: Logging
   private readonly name: string
-  private targetTemp = 205
+  //private targetTemp = 205
 
-  private readonly switchService: Service
+  // private readonly switchService: Service
   private readonly informationService: Service
-  //private readonly temperatureService: Service
+  private readonly temperatureService: Service
 
   constructor(hap: HAP, log: Logging, config: PlatformConfig, name: string) {
     this.log = log
@@ -75,17 +75,73 @@ class KettleSwitch implements AccessoryPlugin {
      * Switch Service
      */
 
-    this.switchService = new hap.Service.Switch(config.name)
-    this.switchService
-      .getCharacteristic(hap.Characteristic.On)
+    // this.switchService = new hap.Service.Switch(config.name)
+    // this.switchService
+    //   .getCharacteristic(hap.Characteristic.On)
+    //   .on(
+    //     CharacteristicEventTypes.GET,
+    //     async (callback: CharacteristicGetCallback) => {
+    //       try {
+    //         const { data } = await axios.get(`${BASE_URL}/status`)
+    //         log.info(
+    //           `${this.name} is powered: ${data.powerState ? 'ON' : 'OFF'}`,
+    //         )
+    //         callback(undefined, data.powerState)
+    //       } catch (err) {
+    //         log.error(err)
+    //         callback(err)
+    //       }
+    //     },
+    //   )
+    //   .on(
+    //     CharacteristicEventTypes.SET,
+    //     async (
+    //       on: CharacteristicValue,
+    //       callback: CharacteristicSetCallback,
+    //     ) => {
+    //       try {
+    //         const powerState = on ? PowerState.On : PowerState.Off
+    //         await axios.post(`${BASE_URL}/power`, { targetState: powerState })
+    //         log.info(`${this.name} is powered: ${powerState ? 'ON' : 'OFF'}`)
+    //         callback()
+    //       } catch (err) {
+    //         log.error(err)
+    //         callback(err)
+    //       }
+    //     },
+    //   )
+
+    /**
+     * Temperature Service
+     */
+
+    this.temperatureService = new hap.Service.Thermostat(this.name)
+
+    /**
+     * Threshold
+     * F Range: 104 - 212
+     * C Range: 40 - 100
+     */
+
+    const minValue = 104
+    const maxValue = 212
+    this.temperatureService
+      .getCharacteristic(hap.Characteristic.HeatingThresholdTemperature)
+      .setProps({ minValue, maxValue })
+
+    /**
+     * Power State
+     */
+
+    this.temperatureService
+      .getCharacteristic(hap.Characteristic.TargetHeaterCoolerState)
+      .setProps({ maxValue: hap.Characteristic.TargetHeaterCoolerState.HEAT })
       .on(
         CharacteristicEventTypes.GET,
         async (callback: CharacteristicGetCallback) => {
           try {
             const { data } = await axios.get(`${BASE_URL}/status`)
-            log.info(
-              `${this.name} is powered: ${data.powerState ? 'ON' : 'OFF'}`,
-            )
+            log.info('Current State: ' + data.powerState)
             callback(undefined, data.powerState)
           } catch (err) {
             log.error(err)
@@ -96,13 +152,14 @@ class KettleSwitch implements AccessoryPlugin {
       .on(
         CharacteristicEventTypes.SET,
         async (
-          on: CharacteristicValue,
+          value: CharacteristicValue,
           callback: CharacteristicSetCallback,
         ) => {
           try {
-            const powerState = on ? PowerState.On : PowerState.Off
-            await axios.post(`${BASE_URL}/power`, { targetState: powerState })
-            log.info(`${this.name} is powered: ${powerState ? 'ON' : 'OFF'}`)
+            await axios.post(`${BASE_URL}/power`, {
+              targetState: value as number,
+            })
+            log.info(`${this.name} power state set to: ${value}`)
             callback()
           } catch (err) {
             log.error(err)
@@ -112,54 +169,71 @@ class KettleSwitch implements AccessoryPlugin {
       )
 
     /**
-     * Temperature Service
-     * F Range: 104 - 212
-     * C Range: 40 - 100
+     * Current Temp
      */
 
-    // const minValue = 104
-    // const maxValue = 212
+    this.temperatureService
+      .getCharacteristic(hap.Characteristic.CurrentTemperature)
+      .on(
+        CharacteristicEventTypes.GET,
+        async (callback: CharacteristicGetCallback) => {
+          try {
+            const { data } = await axios.get(`${BASE_URL}/status`)
+            log.info('Current Temp: ' + data.currentTemp)
+            callback(undefined, data.currentTemp)
+          } catch (err) {
+            log.error(err)
+            callback(err)
+          }
+        },
+      )
 
-    // this.temperatureService = new hap.Service.Thermostat(this.name)
-    // this.temperatureService.getCharacteristic(
-    //   hap.Characteristic.CurrentTemperature,
-    // )
-    // this.temperatureService.getCharacteristic(
-    //   hap.Characteristic.TargetTemperature,
-    // )
-    // this.temperatureService
-    //   .getCharacteristic(hap.Characteristic.HeatingThresholdTemperature)
-    //   .setProps({ minValue, maxValue })
+    /**
+     * Target Temp
+     */
 
-    // this.temperatureService
-    //   .getCharacteristic(hap.Characteristic.On)
-    //   .on(
-    //     CharacteristicEventTypes.GET,
-    //     (callback: CharacteristicGetCallback) => {
-    //       log.info('Target Temp: ' + this.targetTemp)
-    //       callback(undefined, this.targetTemp)
-    //     },
-    //   )
-    //   .on(
-    //     CharacteristicEventTypes.SET,
-    //     async (
-    //       value: CharacteristicValue,
-    //       callback: CharacteristicSetCallback,
-    //     ) => {
-    //       this.targetTemp = value as number
-    //       log.info(`Kettle target temperature was set to: ${this.targetTemp}`)
-    //       callback()
-    //     },
-    //   )
+    this.temperatureService
+      .getCharacteristic(hap.Characteristic.TargetTemperature)
+      .on(
+        CharacteristicEventTypes.GET,
+        async (callback: CharacteristicGetCallback) => {
+          try {
+            const { data } = await axios.get(`${BASE_URL}/status`)
+            log.info('Target Temp: ' + data.targetTemp)
+            callback(undefined, data.targetTemp)
+          } catch (err) {
+            log.error(err)
+            callback(err)
+          }
+        },
+      )
+      .on(
+        CharacteristicEventTypes.SET,
+        async (
+          value: CharacteristicValue,
+          callback: CharacteristicSetCallback,
+        ) => {
+          try {
+            await axios.post(`${BASE_URL}/temperature`, {
+              targetTemp: value as number,
+            })
+            log.info(`${this.name} set to: ${value}`)
+            callback()
+          } catch (err) {
+            log.error(err)
+            callback(err)
+          }
+        },
+      )
 
-    log.info('Switch finished initializing!')
+    log.info(`${this.name} initialized`)
   }
 
   getServices(): Service[] {
     return [
       this.informationService,
-      this.switchService,
-      //this.temperatureService,
+      //this.switchService,
+      this.temperatureService,
     ]
   }
 }
