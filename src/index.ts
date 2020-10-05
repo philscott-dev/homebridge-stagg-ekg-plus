@@ -12,7 +12,7 @@ import {
   StaticPlatformPlugin,
   PlatformConfig,
 } from 'homebridge'
-import { fahrenheitToCelsius } from './helpers'
+import { fahrenheitToCelsius, celsiusToFahrenheit } from './helpers'
 
 let hap: HAP
 const PLATFORM_NAME = 'Stagg EKG+'
@@ -178,10 +178,11 @@ class KettleSwitch implements AccessoryPlugin {
           callback: CharacteristicSetCallback,
         ) => {
           try {
+            const targetTemp = celsiusToFahrenheit(value as number)
             await axios.post(`${BASE_URL}/temperature`, {
-              targetTemp: value as number,
+              targetTemp,
             })
-            log.info(`${this.name} set to: ${value}`)
+            log.info(`${this.name} set to: ${targetTemp}`)
             callback()
           } catch (err) {
             log.error(err)
