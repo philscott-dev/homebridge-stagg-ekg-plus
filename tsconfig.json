@@ -3,12 +3,14 @@
     "target": "ES2018",
     "module": "commonjs",
     "lib": ["ES2020"],
-    "rootDir": "src",
-    "outDir": ".",
+    "rootDir": "./src",
+    "outDir": "./dist",
     "inlineSourceMap": true,
     "strict": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "declarationMap": true,
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "dist"]
 }
