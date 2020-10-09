@@ -79,24 +79,24 @@ class KettlePlugin implements AccessoryPlugin {
 
     this.temperatureService = new hap.Service.Thermostat(this.name)
 
-    this.temperatureService
-      .getCharacteristic(hap.Characteristic.TemperatureDisplayUnits)
-      .on(
-        CharacteristicEventTypes.GET,
-        async (callback: CharacteristicGetCallback) => {
-          try {
-            const { data } = await axios.get(`${BASE_URL}/status`)
-            log.info('Current State: ' + data.powerState)
-            callback(
-              undefined,
-              hap.Characteristic.TemperatureDisplayUnits.CELSIUS,
-            )
-          } catch (err) {
-            log.error(err)
-            callback(err)
-          }
-        },
-      )
+    // this.temperatureService
+    //   .getCharacteristic(hap.Characteristic.TemperatureDisplayUnits)
+    //   .on(
+    //     CharacteristicEventTypes.GET,
+    //     async (callback: CharacteristicGetCallback) => {
+    //       try {
+    //         const { data } = await axios.get(`${BASE_URL}/status`)
+    //         log.info('Current State: ' + data.powerState)
+    //         callback(
+    //           undefined,
+    //           hap.Characteristic.TemperatureDisplayUnits.CELSIUS,
+    //         )
+    //       } catch (err) {
+    //         log.error(err)
+    //         callback(err)
+    //       }
+    //     },
+    //   )
     // .updateValue(hap.Characteristic.TemperatureDisplayUnits.FAHRENHEIT)
 
     /**
