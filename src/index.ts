@@ -22,6 +22,10 @@ export = (api: API) => {
   api.registerPlatform(PLATFORM_NAME, StaggEkgPlusPlatform)
 }
 
+/**
+ * Platform
+ */
+
 class StaggEkgPlusPlatform implements StaticPlatformPlugin {
   private readonly log: Logging
   private config: PlatformConfig
@@ -34,11 +38,15 @@ class StaggEkgPlusPlatform implements StaticPlatformPlugin {
   }
 
   accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): void {
-    callback([new KettleSwitch(hap, this.log, this.config, PLATFORM_NAME)])
+    callback([new KettlePlugin(hap, this.log, this.config, PLATFORM_NAME)])
   }
 }
 
-class KettleSwitch implements AccessoryPlugin {
+/**
+ * Plugin
+ */
+
+class KettlePlugin implements AccessoryPlugin {
   private readonly log: Logging
   private readonly name: string
 
@@ -49,7 +57,7 @@ class KettleSwitch implements AccessoryPlugin {
     this.log = log
     this.name = name
     const host = config.host || 'localhost'
-    const port = config.port || '80'
+    const port = config.port || '8080'
     const BASE_URL = `http://${host}:${port}/api`
 
     /**
