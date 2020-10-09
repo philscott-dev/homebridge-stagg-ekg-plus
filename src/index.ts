@@ -136,10 +136,12 @@ class KettlePlugin implements AccessoryPlugin {
         CharacteristicEventTypes.GET,
         async (callback: CharacteristicGetCallback) => {
           try {
-            const { data } = await axios.get(`${BASE_URL}/status`)
-            const currentTemp = fahrenheitToCelsius(data.currentTemp)
-            log.info('Current Temp: ' + currentTemp)
-            callback(undefined, currentTemp)
+            const {
+              data: { powerState, currentTemp },
+            } = await axios.get(`${BASE_URL}/status`)
+            const temp = fahrenheitToCelsius(currentTemp)
+            log.info('Current Temp: ' + temp)
+            callback(undefined, powerState === 1 ? temp : undefined)
           } catch (err) {
             log.error(err)
             callback(err)
