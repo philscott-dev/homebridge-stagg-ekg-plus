@@ -1,4 +1,5 @@
 {
+    
   "pluginAlias": "Stagg EKG+",
   "pluginType": "platform",
   "headerDisplay": "Stagg EKG+",
@@ -23,6 +24,26 @@
         "required": true,
         "default": 8080
       },
+      "tempUnits":{
+        "title": "Temperature Units",
+        "type": "string",
+        "default": "c",
+        "required": true,
+        "oneOf": [
+          {
+            "title": "Fahrenheit",
+            "enum": [
+              "f"
+            ]
+          },
+          {
+            "title": "Celsius",
+            "enum": [
+              "c"
+            ]
+          }
+        ]
+      },
       "serialNumber": {
         "title": "Serial Number",
         "type": "string",
@@ -33,4 +54,5 @@
   },
   "form": null,
   "display": null
+
 }

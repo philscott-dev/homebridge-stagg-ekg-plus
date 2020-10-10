@@ -12,6 +12,7 @@ import {
   StaticPlatformPlugin,
   PlatformConfig,
 } from 'homebridge'
+import { C_MAX, C_MIN } from './constants'
 import { fahrenheitToCelsius, celsiusToFahrenheit } from './helpers'
 
 let hap: HAP
@@ -53,12 +54,22 @@ class KettlePlugin implements AccessoryPlugin {
   private readonly informationService: Service
   private readonly temperatureService: Service
 
+  private tempUnits: 0 | 1
+
   constructor(hap: HAP, log: Logging, config: PlatformConfig, name: string) {
+    const { CELSIUS, FAHRENHEIT } = hap.Characteristic.TemperatureDisplayUnits
     this.log = log
     this.name = name
     const host = config.host || 'localhost'
     const port = config.port || '8080'
     const BASE_URL = `http://${host}:${port}/api`
+
+    /**
+     * Units
+     */
+
+    this.log(`Temp Unit: ${config.tempUnits}`)
+    this.tempUnits = config.tempUnits === 'c' ? CELSIUS : FAHRENHEIT
 
     /**
      * Information Service
@@ -74,32 +85,17 @@ class KettlePlugin implements AccessoryPlugin {
       )
 
     /**
-     * Temperature Service
-     * F Range: 104 - 212
-     * C Range: 40 - 100
+     * Display Units
      */
 
-    const minValue = 40
-    const maxValue = 100
-
     this.temperatureService = new hap.Service.Thermostat(this.name)
-
     this.temperatureService
       .getCharacteristic(hap.Characteristic.TemperatureDisplayUnits)
       .on(
         CharacteristicEventTypes.GET,
         async (callback: CharacteristicGetCallback) => {
           try {
-            const {
-              CELSIUS,
-              FAHRENHEIT,
-            } = hap.Characteristic.TemperatureDisplayUnits
-            const { data } = await axios.get(`${BASE_URL}/status`)
-            const units =
-              data.targetTemp <= maxValue && data.targetTemp >= minValue
-                ? CELSIUS
-                : FAHRENHEIT
-            callback(undefined, units)
+            callback(undefined, this.tempUnits)
           } catch (err) {
             log.error(err)
             callback(err)
@@ -161,7 +157,10 @@ class KettlePlugin implements AccessoryPlugin {
         async (callback: CharacteristicGetCallback) => {
           try {
             const { data } = await axios.get(`${BASE_URL}/status`)
-            const currentTemp = fahrenheitToCelsius(data.currentTemp)
+            const currentTemp = data.currentTemp
+            this.tempUnits === CELSIUS
+              ? data.currentTemp
+              : fahrenheitToCelsius(data.currentTemp)
             log.info('Current Temp: ' + currentTemp)
             callback(undefined, currentTemp)
           } catch (err) {
@@ -171,21 +170,28 @@ class KettlePlugin implements AccessoryPlugin {
         },
       )
 
+    /**
+     * Target Temperature
+     */
+
     this.temperatureService
       .getCharacteristic(hap.Characteristic.TargetTemperature)
       .setProps({
-        minValue,
-        maxValue,
+        minValue: C_MIN,
+        maxValue: C_MAX,
         minStep: 1,
         format: hap.Formats.INT,
-        validValueRanges: [minValue, maxValue],
+        validValueRanges: [C_MIN, C_MAX],
       })
       .on(
         CharacteristicEventTypes.GET,
         async (callback: CharacteristicGetCallback) => {
           try {
             const { data } = await axios.get(`${BASE_URL}/status`)
-            const targetTemp = fahrenheitToCelsius(data.targetTemp)
+            const targetTemp =
+              this.tempUnits === CELSIUS
+                ? data.targetTemp
+                : fahrenheitToCelsius(data.targetTemp)
             log.info('Target Temp: ' + targetTemp)
             callback(undefined, targetTemp)
           } catch (err) {
@@ -201,7 +207,11 @@ class KettlePlugin implements AccessoryPlugin {
           callback: CharacteristicSetCallback,
         ) => {
           try {
-            const targetTemp = celsiusToFahrenheit(value as number)
+            log.info(`${this.name} set to: ${value}`)
+            const targetTemp =
+              this.tempUnits === CELSIUS
+                ? (value as number)
+                : celsiusToFahrenheit(value as number)
             await axios.post(`${BASE_URL}/temperature`, {
               targetTemp,
             })
