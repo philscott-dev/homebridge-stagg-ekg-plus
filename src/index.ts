@@ -75,29 +75,37 @@ class KettlePlugin implements AccessoryPlugin {
 
     /**
      * Temperature Service
+     * F Range: 104 - 212
+     * C Range: 40 - 100
      */
+
+    const minValue = 40
+    const maxValue = 100
 
     this.temperatureService = new hap.Service.Thermostat(this.name)
 
-    // this.temperatureService
-    //   .getCharacteristic(hap.Characteristic.TemperatureDisplayUnits)
-    //   .on(
-    //     CharacteristicEventTypes.GET,
-    //     async (callback: CharacteristicGetCallback) => {
-    //       try {
-    //         const { data } = await axios.get(`${BASE_URL}/status`)
-    //         log.info('Current State: ' + data.powerState)
-    //         callback(
-    //           undefined,
-    //           hap.Characteristic.TemperatureDisplayUnits.CELSIUS,
-    //         )
-    //       } catch (err) {
-    //         log.error(err)
-    //         callback(err)
-    //       }
-    //     },
-    //   )
-    // .updateValue(hap.Characteristic.TemperatureDisplayUnits.FAHRENHEIT)
+    this.temperatureService
+      .getCharacteristic(hap.Characteristic.TemperatureDisplayUnits)
+      .on(
+        CharacteristicEventTypes.GET,
+        async (callback: CharacteristicGetCallback) => {
+          try {
+            const {
+              CELSIUS,
+              FAHRENHEIT,
+            } = hap.Characteristic.TemperatureDisplayUnits
+            const { data } = await axios.get(`${BASE_URL}/status`)
+            const units =
+              data.targetTemp <= maxValue && data.targetTemp >= minValue
+                ? CELSIUS
+                : FAHRENHEIT
+            callback(undefined, units)
+          } catch (err) {
+            log.error(err)
+            callback(err)
+          }
+        },
+      )
 
     /**
      * (Power) Target Heating Cooling State
@@ -162,15 +170,6 @@ class KettlePlugin implements AccessoryPlugin {
           }
         },
       )
-
-    /**
-     * Target Temperature
-     * F Range: 104 - 212
-     * C Range: 40 - 100
-     */
-
-    const minValue = 40
-    const maxValue = 100
 
     this.temperatureService
       .getCharacteristic(hap.Characteristic.TargetTemperature)
