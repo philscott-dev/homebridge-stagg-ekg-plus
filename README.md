@@ -1,5 +1,7 @@
 # homebridge-stagg-ekg-plus
-Homebridge plugin to be used in conjunction with [homebridge-stagg-ekg-plus-server](https://github.com/philscott-dev/homebridge-stagg-ekg-plus-server)
+[![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
+
+A homebridge plugin for the [Fellow Stagg EKG+](https://fellowproducts.com/products/stagg-ekg-plus). Used in conjunction with [homebridge-stagg-ekg-plus-server](https://github.com/philscott-dev/homebridge-stagg-ekg-plus-server), this plugin will enhance your kettle with WiFi connectivity, and Apple HomeKit integration.
 
 ## Installation
 ```
