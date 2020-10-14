@@ -157,11 +157,11 @@ class KettlePlugin implements AccessoryPlugin {
         async (callback: CharacteristicGetCallback) => {
           try {
             const { data } = await axios.get(`${BASE_URL}/status`)
-            const currentTemp = data.currentTemp
-            this.tempUnits === CELSIUS
-              ? data.currentTemp
-              : fahrenheitToCelsius(data.currentTemp)
-            log.info('Current Temp: ' + currentTemp)
+            const currentTemp =
+              this.tempUnits === CELSIUS
+                ? data.currentTemp
+                : fahrenheitToCelsius(data.currentTemp)
+            log.info('Current Temp: ' + data.currentTemp)
             callback(undefined, currentTemp)
           } catch (err) {
             log.error(err)
@@ -192,7 +192,7 @@ class KettlePlugin implements AccessoryPlugin {
               this.tempUnits === CELSIUS
                 ? data.targetTemp
                 : fahrenheitToCelsius(data.targetTemp)
-            log.info('Target Temp: ' + targetTemp)
+            log.info('Target Temp: ' + data.targetTemp)
             callback(undefined, targetTemp)
           } catch (err) {
             log.error(err)
