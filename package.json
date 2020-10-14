@@ -1,6 +1,6 @@
 {
   "name": "homebridge-stagg-ekg-plus",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "description": "Homebridge plugin for the Stagg EKG+ electric kettle",
   "main": "dist/index.js",
   "scripts": {
