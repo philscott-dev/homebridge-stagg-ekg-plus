@@ -97,8 +97,12 @@ class KettlePlugin implements AccessoryPlugin {
           try {
             callback(undefined, this.tempUnits)
           } catch (err) {
-            log.error(err)
-            callback(err)
+            if (err instanceof Error) {
+              log.error(err.message)
+              callback(err)
+            } else {
+              callback()
+            }
           }
         },
       )
@@ -122,8 +126,12 @@ class KettlePlugin implements AccessoryPlugin {
             log.info('Current State: ' + data.powerState)
             callback(undefined, data.powerState)
           } catch (err) {
-            log.error(err)
-            callback(err)
+            if (err instanceof Error) {
+              log.error(err.message)
+              callback(err)
+            } else {
+              callback()
+            }
           }
         },
       )
@@ -140,8 +148,12 @@ class KettlePlugin implements AccessoryPlugin {
             log.info(`${this.name} power state set to: ${value}`)
             callback()
           } catch (err) {
-            log.error(err)
-            callback(err)
+            if (err instanceof Error) {
+              log.error(err.message)
+              callback(err)
+            } else {
+              callback()
+            }
           }
         },
       )
@@ -164,8 +176,12 @@ class KettlePlugin implements AccessoryPlugin {
             log.info('Current Temp: ' + data.currentTemp)
             callback(undefined, currentTemp)
           } catch (err) {
-            log.error(err)
-            callback(err)
+            if (err instanceof Error) {
+              log.error(err.message)
+              callback(err)
+            } else {
+              callback()
+            }
           }
         },
       )
@@ -195,8 +211,12 @@ class KettlePlugin implements AccessoryPlugin {
             log.info('Target Temp: ' + data.targetTemp)
             callback(undefined, targetTemp)
           } catch (err) {
-            log.error(err)
-            callback(err)
+            if (err instanceof Error) {
+              log.error(err.message)
+              callback(err)
+            } else {
+              callback()
+            }
           }
         },
       )
@@ -218,8 +238,12 @@ class KettlePlugin implements AccessoryPlugin {
             log.info(`${this.name} set to: ${targetTemp}`)
             callback()
           } catch (err) {
-            log.error(err)
-            callback(err)
+            if (err instanceof Error) {
+              log.error(err.message)
+              callback(err)
+            } else {
+              callback()
+            }
           }
         },
       )
